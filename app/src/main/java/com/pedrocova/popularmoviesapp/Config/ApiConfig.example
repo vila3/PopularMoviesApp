@@ -1,0 +1,12 @@
+package com.pedrocova.popularmoviesapp.Config;
+
+/**
+ * Created by pedro on 25/01/2017.
+ *
+ * TODO Copy this file and rename to "ApiConfig.java"
+ */
+
+public class ApiConfig_example {
+    // TODO replace the API_KEY value with yours API key
+    public final static String API_KEY = "api_given_key";
+}
