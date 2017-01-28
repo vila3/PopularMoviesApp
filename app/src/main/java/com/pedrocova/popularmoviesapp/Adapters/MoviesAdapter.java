@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -18,8 +17,6 @@ import com.pedrocova.popularmoviesapp.Movie;
 import com.pedrocova.popularmoviesapp.MovieActivity;
 import com.pedrocova.popularmoviesapp.R;
 import com.pedrocova.popularmoviesapp.Utils.ApiUtils;
-import com.pedrocova.popularmoviesapp.Utils.ViewUtils;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

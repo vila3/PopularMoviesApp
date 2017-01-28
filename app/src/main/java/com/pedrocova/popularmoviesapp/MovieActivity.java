@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -25,6 +26,7 @@ public class MovieActivity extends AppCompatActivity {
     private TextView mUserRatingTextView;
     private TextView mReleaseDateTextView;
     private ImageView mPosterImageView;
+    private ScrollView mScrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +54,24 @@ public class MovieActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        mScrollView = (ScrollView) findViewById(R.id.sv_movie_information);
         mTitleTextView = (TextView) findViewById(R.id.tv_movie_title);
         mSynopsisTextView = (TextView) findViewById(R.id.tv_movie_synopsis);
         mUserRatingTextView = (TextView) findViewById(R.id.tv_movie_user_rating);
         mReleaseDateTextView = (TextView) findViewById(R.id.tv_movie_release_date);
         mPosterImageView = (ImageView) findViewById(R.id.img_movie_poster);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("scroll_position", mScrollView.getScrollY());
+        super.onSaveInstanceState(outState);
+    }
+
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mScrollView.setScrollY(savedInstanceState.getInt("scroll_position"));
     }
 }

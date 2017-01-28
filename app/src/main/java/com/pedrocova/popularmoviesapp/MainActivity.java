@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -37,6 +38,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     private Spinner mSortBySpinner;
     private RecyclerView mMoviesGridRecyclerView;
     private TextView mErrorMessageTextView;
@@ -48,9 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     private NetworkChangeReceiver internetStatusChange;
 
-    boolean isFirstSelection = true;
-
-    // TODO implement save instance
+    boolean isUserTouch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,18 +69,32 @@ public class MainActivity extends AppCompatActivity {
         mSortBySpinner.setAdapter(ArrayAdapter.createFromResource(this, R.array.sort_by_readable_options,
                 android.support.v7.appcompat.R.layout.support_simple_spinner_dropdown_item));
 
+        Log.d(TAG, "onCreate - isUserTouch: " + String.valueOf(isUserTouch));
+
+        mSortBySpinner.setOnTouchListener(new AdapterView.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                isUserTouch = true;
+                return false;
+            }
+        });
+
         mSortBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d("MainActivity", "Sort by: " + adapterView.getItemAtPosition(i).toString());
 
+                Log.d(TAG, "onItemSelected - isUserTouch: " + String.valueOf(isUserTouch));
                 // Prevent from running on the first time
-                if (isFirstSelection) {
-                    isFirstSelection = false;
+                if (!isUserTouch) {
                     return;
+                } else {
+                    Log.d(TAG, "Sort by: " + adapterView.getItemAtPosition(i).toString());
+                    getDataFromApi(i);
                 }
 
-                getDataFromApi(i);
+                isUserTouch = false;
             }
 
             @Override
@@ -88,31 +103,48 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        int spanCount = 2;
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-            spanCount = 3;
-        gridLayoutManager = new GridLayoutManager(MainActivity.this, spanCount);
-        mMoviesGridRecyclerView.setLayoutManager(gridLayoutManager);
-
-        moviesAdapter = new MoviesAdapter(null);
-        mMoviesGridRecyclerView.setAdapter(moviesAdapter);
-
+        // Register a BroadCasterReceiver to know when internet connection as changed -->
         internetStatusChange = new NetworkChangeReceiver();
         registerReceiver(internetStatusChange,
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        // <--
 
+        // Initialize mMovies List based if new activity or screen has rotated -->
         if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
             getDataFromApi(0);
         }
         else {
             mMovies = savedInstanceState.getParcelableArrayList("movies");
-            moviesAdapter.setMoviesData(mMovies);
-            moviesAdapter.notifyDataSetChanged();
         }
+        // <--
+
+        // Change Spinner place according screen orientation -->
+        RelativeLayout.LayoutParams spinnerParams = (RelativeLayout.LayoutParams) mSortBySpinner.getLayoutParams();
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            spinnerParams.addRule(RelativeLayout.END_OF, R.id.activity_main_title);
+        }
+        else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            spinnerParams.removeRule(RelativeLayout.ABOVE);
+            spinnerParams.addRule(RelativeLayout.BELOW, R.id.activity_main_title);
+
+            RelativeLayout.LayoutParams moviesGridParams = (RelativeLayout.LayoutParams) mMoviesGridRecyclerView.getLayoutParams();
+            moviesGridParams.removeRule(RelativeLayout.BELOW);
+            moviesGridParams.addRule(RelativeLayout.BELOW, R.id.sp_sort_by);
+        }
+        // <--
+
+        // Set RecyclerView configurations (LayoutManager & Adapter) -->
+        gridLayoutManager = new GridLayoutManager(MainActivity.this, 2);
+        mMoviesGridRecyclerView.setLayoutManager(gridLayoutManager);
+
+        moviesAdapter = new MoviesAdapter(mMovies);
+        mMoviesGridRecyclerView.setAdapter(moviesAdapter);
+        // <--
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstance - isUserTouch: " + String.valueOf(isUserTouch));
         outState.putParcelableArrayList("movies", new ArrayList<>(mMovies));
         super.onSaveInstanceState(outState);
     }
@@ -202,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
             mMovies = movies;
             moviesAdapter.setMoviesData(movies);
             moviesAdapter.notifyDataSetChanged();
+            mMoviesGridRecyclerView.scrollToPosition(0);
 
             hideProgressBar();
             hideErrorMessage();
