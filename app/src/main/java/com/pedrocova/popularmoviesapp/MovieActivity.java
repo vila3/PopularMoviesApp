@@ -14,19 +14,21 @@ import com.google.gson.Gson;
 import com.pedrocova.popularmoviesapp.Utils.ApiUtils;
 import com.squareup.picasso.Picasso;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by pedro on 26/01/2017.
  */
 
 public class MovieActivity extends AppCompatActivity {
 
-    private Movie movie;
-    private TextView mTitleTextView;
-    private TextView mSynopsisTextView;
-    private TextView mUserRatingTextView;
-    private TextView mReleaseDateTextView;
-    private ImageView mPosterImageView;
-    private ScrollView mScrollView;
+    @BindView(R.id.tv_movie_title) TextView mTitleTextView;
+    @BindView(R.id.tv_movie_synopsis) TextView mSynopsisTextView;
+    @BindView(R.id.tv_movie_user_rating) TextView mUserRatingTextView;
+    @BindView(R.id.tv_movie_release_date) TextView mReleaseDateTextView;
+    @BindView(R.id.img_movie_poster) ImageView mPosterImageView;
+    @BindView(R.id.sv_movie_information) ScrollView mScrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +36,11 @@ public class MovieActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_movie);
 
-        initViews();
+        ButterKnife.bind(this);
+
         Intent intentStartedActivity = getIntent();
 
-        movie = new Gson().fromJson(intentStartedActivity.getStringExtra("movie"), Movie.class);
+        Movie movie = new Gson().fromJson(intentStartedActivity.getStringExtra("movie"), Movie.class);
 
         Uri imageUri = ApiUtils.getImageUri(getApplicationContext(), movie.getPoster_path());
         Log.d("MovieActivity", "Poster url: " + imageUri.toString());
@@ -51,15 +54,6 @@ public class MovieActivity extends AppCompatActivity {
         mUserRatingTextView.setText(String.valueOf(movie.getVote_average()));
         mReleaseDateTextView.setText(movie.getRelease_date());
 
-    }
-
-    private void initViews() {
-        mScrollView = (ScrollView) findViewById(R.id.sv_movie_information);
-        mTitleTextView = (TextView) findViewById(R.id.tv_movie_title);
-        mSynopsisTextView = (TextView) findViewById(R.id.tv_movie_synopsis);
-        mUserRatingTextView = (TextView) findViewById(R.id.tv_movie_user_rating);
-        mReleaseDateTextView = (TextView) findViewById(R.id.tv_movie_release_date);
-        mPosterImageView = (ImageView) findViewById(R.id.img_movie_poster);
     }
 
     @Override

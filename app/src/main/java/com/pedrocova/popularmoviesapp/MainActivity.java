@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,8 +23,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pedrocova.popularmoviesapp.Adapters.MoviesAdapter;
+import com.pedrocova.popularmoviesapp.Utils.ApiQueryTask;
 import com.pedrocova.popularmoviesapp.Utils.ApiUtils;
 import com.pedrocova.popularmoviesapp.Utils.NetworkUtils;
 
@@ -36,14 +39,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private Spinner mSortBySpinner;
-    private RecyclerView mMoviesGridRecyclerView;
-    private TextView mErrorMessageTextView;
-    private ProgressBar mLoadingProgressBar;
+    @BindView(R.id.sp_sort_by) Spinner mSortBySpinner;
+    @BindView(R.id.rv_movies_grid) RecyclerView mMoviesGridRecyclerView;
+    @BindView(R.id.tv_main_error_message) TextView mErrorMessageTextView;
+    @BindView(R.id.pb_main_loading) ProgressBar mLoadingProgressBar;
 
     List<Movie> mMovies;
     MoviesAdapter moviesAdapter;
@@ -64,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             mActionBar.setIcon(R.drawable.movie_icon);
         }
 
-        initViews();
+        ButterKnife.bind(this);
 
         mSortBySpinner.setAdapter(ArrayAdapter.createFromResource(this, R.array.sort_by_readable_options,
                 android.support.v7.appcompat.R.layout.support_simple_spinner_dropdown_item));
@@ -134,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         // <--
 
         // Set RecyclerView configurations (LayoutManager & Adapter) -->
-        gridLayoutManager = new GridLayoutManager(MainActivity.this, 2);
+        gridLayoutManager = new GridLayoutManager(MainActivity.this, calculateNoOfColumns(getBaseContext()));
         mMoviesGridRecyclerView.setLayoutManager(gridLayoutManager);
 
         moviesAdapter = new MoviesAdapter(mMovies);
@@ -155,11 +161,10 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(internetStatusChange);
     }
 
-    private void initViews() {
-        mSortBySpinner = (Spinner) findViewById(R.id.sp_sort_by);
-        mMoviesGridRecyclerView = (RecyclerView) findViewById(R.id.rv_movies_grid);
-        mErrorMessageTextView = (TextView) findViewById(R.id.tv_main_error_message);
-        mLoadingProgressBar = (ProgressBar) findViewById(R.id.pb_main_loading);
+    public static int calculateNoOfColumns(Context context) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        return (int) (dpWidth / 180);
     }
 
     private void showErrorMessage(String message) {
@@ -199,37 +204,34 @@ public class MainActivity extends AppCompatActivity {
         URL url = NetworkUtils.builURL(uri);
 
         if (NetworkUtils.isOnline(getApplicationContext())) {
-            new ApiQueryTask().execute(url);
+            new ApiQueryTask(this, new ApiQueryTaskCompleteListener()).execute(url);
             return true;
         }
         else {
             hideProgressBar();
-            showErrorMessage("Sorry, without internet connection!");
+            showErrorMessage(getString(R.string.no_internet_error));
             return false;
         }
     }
 
-
-    public class ApiQueryTask extends AsyncTask<URL, Void, List<Movie>> {
+    public class ApiQueryTaskCompleteListener implements AsyncTaskCompleteListener<JSONObject>
+    {
 
         @Override
-        protected List<Movie> doInBackground(URL... urls) {
-            URL url = urls[0];
+        public void onTaskComplete(JSONObject jsonObject)
+        {
+
+            List<Movie> movies = mMovies;
             try {
-                String response = NetworkUtils.getResponseFromHttpUrl(url);
-                Log.d("ApiQueryTask", "API response: " + response);
-                JSONObject jsonObject = new JSONObject(response);
-                JSONArray jsonArray = jsonObject.getJSONArray("results");
-                return ApiUtils.getMoviesListFromJsonArray(jsonArray.toString());
-            } catch (IOException | JSONException e) {
+                if (jsonObject != null && jsonObject.has("results")) {
+                    JSONArray jsonArray = jsonObject.getJSONArray("results");
+                    movies = ApiUtils.getMoviesListFromJsonArray(jsonArray.toString());
+                }
+            } catch (JSONException e) {
                 e.printStackTrace();
+                Toast.makeText(getBaseContext(), R.string.loading_data_error, Toast.LENGTH_LONG).show();
+                showErrorMessage(getString(R.string.loading_data_error));
             }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<Movie> movies) {
-            super.onPostExecute(movies);
 
             mMovies = movies;
             moviesAdapter.setMoviesData(movies);
