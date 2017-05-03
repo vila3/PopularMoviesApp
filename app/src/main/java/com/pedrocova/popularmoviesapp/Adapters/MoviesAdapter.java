@@ -54,7 +54,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.FilmHolder
         Log.d("FilmsAdapter", "Poster url: " + imageUri.toString());
         Picasso.with(context).load(imageUri.toString()).placeholder(ContextCompat.getDrawable(context, R.drawable.default_image)).into(holder.imageViewCover);
 
-        holder.textViewTitle.setText(movie.getOriginal_title());
+//        holder.textViewTitle.setText(movie.getOriginal_title());
 
         holder.parent.setTag(String.valueOf(movie.getId()));
         holder.parent.setOnClickListener(new View.OnClickListener() {
@@ -83,14 +83,14 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.FilmHolder
 
     class FilmHolder extends RecyclerView.ViewHolder {
 
-        TextView textViewTitle;
+        //TextView textViewTitle;
         ImageView imageViewCover;
         View parent;
 
         FilmHolder(View itemView) {
             super(itemView);
             parent = itemView;
-            textViewTitle = (TextView) itemView.findViewById(R.id.tv_movie_title);
+            //textViewTitle = (TextView) itemView.findViewById(R.id.tv_movie_title);
             imageViewCover = (ImageView) itemView.findViewById(R.id.img_movie_cover);
         }
     }

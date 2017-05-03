@@ -15,14 +15,16 @@ public class Movie implements Parcelable {
     private String overview;
     private float vote_average;
     private String release_date;
+    private int runtime;
 
-    public Movie(int id, String original_title, String poster_path, String overview, float vote_average, String release_date) {
+    public Movie(int id, String original_title, String poster_path, String overview, float vote_average, String release_date, int runtime) {
         this.id = id;
         this.original_title = original_title;
         this.poster_path = poster_path;
         this.overview = overview;
         this.vote_average = vote_average;
         this.release_date = release_date;
+        this.runtime = runtime;
     }
 
     private Movie(Parcel in) {
@@ -32,6 +34,7 @@ public class Movie implements Parcelable {
         overview = in.readString();
         vote_average = in.readFloat();
         release_date = in.readString();
+        runtime = in.readInt();
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
@@ -59,6 +62,7 @@ public class Movie implements Parcelable {
         parcel.writeString(overview);
         parcel.writeFloat(vote_average);
         parcel.writeString(release_date);
+        parcel.writeInt(runtime);
     }
 
     public int getId() {
@@ -107,5 +111,13 @@ public class Movie implements Parcelable {
 
     public void setRelease_date(String release_date) {
         this.release_date = release_date;
+    }
+
+    public int getRuntime() {
+        return runtime;
+    }
+
+    public void setRuntime(int runtime) {
+        this.runtime = runtime;
     }
 }

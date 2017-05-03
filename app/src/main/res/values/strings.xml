@@ -13,6 +13,8 @@
     <string name="label_title">Title</string>
     <string name="loading_data_error">Error loading data! Please try again later.</string>
     <string name="no_internet_error">Sorry, without internet connection!</string>
+    <string name="menu_sort_by">Sort by</string>
+    <string name="tv_trailers_title">Trailers:</string>
 
     <string-array name="sort_by_readable_options">
         <item>Popularity</item>

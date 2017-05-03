@@ -1,5 +1,7 @@
 package com.pedrocova.popularmoviesapp;
 
+import org.json.JSONException;
+
 /**
  * Created by pedro on 30/01/2017.
  *
@@ -18,5 +20,5 @@ public interface AsyncTaskCompleteListener<T> {
      * Invoked when the AsyncTask has completed its execution.
      * @param result The resulting object from the AsyncTask.
      */
-    public void onTaskComplete(T result);
+    public void onTaskComplete(T result) throws JSONException;
 }

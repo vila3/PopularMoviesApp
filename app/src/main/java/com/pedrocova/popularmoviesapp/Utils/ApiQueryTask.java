@@ -31,6 +31,7 @@ public class ApiQueryTask extends AsyncTask<URL, Void, JSONObject> {
     @Override
     protected JSONObject doInBackground(URL... urls) {
         URL url = urls[0];
+        Log.d(TAG, url.toString());
         try {
             String response = NetworkUtils.getResponseFromHttpUrl(url);
             Log.d("ApiQueryTask", "API response: " + response);
@@ -45,6 +46,10 @@ public class ApiQueryTask extends AsyncTask<URL, Void, JSONObject> {
     @Override
     protected void onPostExecute(JSONObject jsonObject) {
         super.onPostExecute(jsonObject);
-        listener.onTaskComplete(jsonObject);
+        try {
+            listener.onTaskComplete(jsonObject);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

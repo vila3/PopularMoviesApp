@@ -29,13 +29,30 @@ public class ApiUtils {
         return getUriBuilder(context).appendPath("movie");
     }
 
-    public static List<Movie> getMoviesListFromJsonArray(String jsonString) {
-        Type listType = new TypeToken<ArrayList<Movie>>(){}.getType();
-        return new Gson().fromJson(jsonString, listType);
-    }
-
     public static Uri getImageUri(Context context, String poster_path) {
         return Uri.parse(context.getString(R.string.api_images_url)).buildUpon()
                 .appendPath("w185").appendEncodedPath(poster_path).build();
+    }
+
+    public static Uri getMovieUri(Context context, int id) {
+        return getUriBuilder(context).appendPath("movie").appendPath(String.valueOf(id)).build();
+    }
+
+    public static Uri getVideosUri(Context context, int id) {
+        return getUriBuilder(context).appendPath("movie").appendPath(String.valueOf(id))
+                .appendPath("videos").build();
+    }
+
+    public static Uri getReviewsUri(Context context, int id) {
+        return getUriBuilder(context).appendPath("movie").appendPath(String.valueOf(id))
+                .appendPath("reviews").build();
+    }
+
+    /*
+     * Data processing
+     */
+    public static List<Movie> getMoviesListFromJsonArray(String jsonString) {
+        Type listType = new TypeToken<ArrayList<Movie>>(){}.getType();
+        return new Gson().fromJson(jsonString, listType);
     }
 }

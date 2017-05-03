@@ -5,22 +5,24 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,7 +36,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,10 +47,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    @BindView(R.id.sp_sort_by) Spinner mSortBySpinner;
+    private static final String MOVIES_LAYOUT_MANAGER_STATE = "movies_layout_manager";
+    private static final String MOVIES_ARRAY_STATE = "movies";
+
     @BindView(R.id.rv_movies_grid) RecyclerView mMoviesGridRecyclerView;
     @BindView(R.id.tv_main_error_message) TextView mErrorMessageTextView;
     @BindView(R.id.pb_main_loading) ProgressBar mLoadingProgressBar;
+    private Spinner mSortBySpinner;
 
     List<Movie> mMovies;
     MoviesAdapter moviesAdapter;
@@ -58,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private NetworkChangeReceiver internetStatusChange;
 
     boolean isUserTouch;
+    private Parcelable mListState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +77,89 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        mSortBySpinner.setAdapter(ArrayAdapter.createFromResource(this, R.array.sort_by_readable_options,
-                android.support.v7.appcompat.R.layout.support_simple_spinner_dropdown_item));
+        // Register a BroadCasterReceiver to know when internet connection as changed -->
+        internetStatusChange = new NetworkChangeReceiver();
+        registerReceiver(internetStatusChange,
+                new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        // <--
 
-        Log.d(TAG, "onCreate - isUserTouch: " + String.valueOf(isUserTouch));
+        gridLayoutManager = new GridLayoutManager(MainActivity.this, calculateNoOfColumns(getBaseContext()));
+        // Initialize mMovies List based if new activity or screen has rotated -->
+        if(savedInstanceState == null) {
+            getDataFromApi(0);
+        }
+        else {
+            Log.d(TAG, savedInstanceState.toString());
+            if (savedInstanceState.containsKey(MOVIES_LAYOUT_MANAGER_STATE)) {
+                gridLayoutManager.onRestoreInstanceState(savedInstanceState.getParcelable(MOVIES_LAYOUT_MANAGER_STATE));
+            }
+            if (savedInstanceState.containsKey(MOVIES_ARRAY_STATE))
+                mMovies = savedInstanceState.getParcelableArrayList(MOVIES_ARRAY_STATE);
+        }
+        // <--
 
-        mSortBySpinner.setOnTouchListener(new AdapterView.OnTouchListener() {
+        // Set RecyclerView configurations (LayoutManager & Adapter) -->
+
+        mMoviesGridRecyclerView.setLayoutManager(gridLayoutManager);
+
+        moviesAdapter = new MoviesAdapter(mMovies);
+        mMoviesGridRecyclerView.setAdapter(moviesAdapter);
+        // <--
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // Save list state
+        mListState = gridLayoutManager.onSaveInstanceState();
+        outState.putParcelable(MOVIES_LAYOUT_MANAGER_STATE, mListState);
+
+        outState.putParcelableArrayList("movies", new ArrayList<>(mMovies));
+        super.onSaveInstanceState(outState);
+    }
+
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+
+        // Retrieve list state and list/item positions
+        if(state != null)
+            mListState = state.getParcelable(MOVIES_LAYOUT_MANAGER_STATE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (mListState != null) {
+            gridLayoutManager.onRestoreInstanceState(mListState);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(internetStatusChange);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main_menu, menu);
+
+        setTitle(getString(R.string.main_title));
+
+        MenuItem menuItem = menu.findItem(R.id.sp_sort_by);
+        mSortBySpinner = (Spinner) MenuItemCompat.getActionView(menuItem);
+        Log.d(TAG, mSortBySpinner.toString());
+        setupSortBySpinner(mSortBySpinner);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public void setupSortBySpinner(Spinner spinner) {
+        spinner.setAdapter(ArrayAdapter.createFromResource(this, R.array.sort_by_readable_options,
+                R.layout.sortby_spinner_item));
+
+        spinner.setOnTouchListener(new AdapterView.OnTouchListener() {
 
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -86,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mSortBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -108,57 +190,16 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-        // Register a BroadCasterReceiver to know when internet connection as changed -->
-        internetStatusChange = new NetworkChangeReceiver();
-        registerReceiver(internetStatusChange,
-                new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-        // <--
-
-        // Initialize mMovies List based if new activity or screen has rotated -->
-        if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
-            getDataFromApi(0);
-        }
-        else {
-            mMovies = savedInstanceState.getParcelableArrayList("movies");
-        }
-        // <--
-
-        // Change Spinner place according screen orientation -->
-        RelativeLayout.LayoutParams spinnerParams = (RelativeLayout.LayoutParams) mSortBySpinner.getLayoutParams();
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            spinnerParams.addRule(RelativeLayout.END_OF, R.id.activity_main_title);
-        }
-        else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            spinnerParams.removeRule(RelativeLayout.ABOVE);
-            spinnerParams.addRule(RelativeLayout.BELOW, R.id.activity_main_title);
-
-            RelativeLayout.LayoutParams moviesGridParams = (RelativeLayout.LayoutParams) mMoviesGridRecyclerView.getLayoutParams();
-            moviesGridParams.removeRule(RelativeLayout.BELOW);
-            moviesGridParams.addRule(RelativeLayout.BELOW, R.id.sp_sort_by);
-        }
-        // <--
-
-        // Set RecyclerView configurations (LayoutManager & Adapter) -->
-        gridLayoutManager = new GridLayoutManager(MainActivity.this, calculateNoOfColumns(getBaseContext()));
-        mMoviesGridRecyclerView.setLayoutManager(gridLayoutManager);
-
-        moviesAdapter = new MoviesAdapter(mMovies);
-        mMoviesGridRecyclerView.setAdapter(moviesAdapter);
-        // <--
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstance - isUserTouch: " + String.valueOf(isUserTouch));
-        outState.putParcelableArrayList("movies", new ArrayList<>(mMovies));
-        super.onSaveInstanceState(outState);
-    }
+    public boolean onOptionsItemSelected(MenuItem item) {
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(internetStatusChange);
+        switch (item.getItemId()) {
+            case R.id.sp_sort_by:
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public static int calculateNoOfColumns(Context context) {

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MovieActivity"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MovieActivity">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:id="@+id/sv_movie_information"
@@ -11,109 +12,196 @@
         android:layout_height="match_parent"
         android:overScrollMode="never">
 
-        <LinearLayout
-            android:orientation="vertical"
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/activity_vertical_margin"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin">
-
-            <!-- Title -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:text="@string/label_title"/>
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/tv_movie_title"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginBottom="15dp"/>
+                android:minHeight="100dp"
+                android:gravity="center_vertical"
+                android:textSize="45sp"
+                android:padding="25dp"
+                android:background="@color/colorAccent"
+                android:textColor="@color/white"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:layout_editor_absoluteX="0dp" />
 
-            <!-- Poster image -->
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:weightSum="1"
-                android:layout_marginBottom="15dp">
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:paddingTop="15dp"
+                app:layout_constraintTop_toBottomOf="@+id/tv_movie_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:layout_editor_absoluteX="25dp">
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.25"/>
-
-                <ImageView
-                    android:id="@+id/img_movie_poster"
+                <LinearLayout
+                    android:id="@+id/ll_movie_infos"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
-                    android:scaleType="centerCrop"
-                    android:adjustViewBounds="true"
-                    android:contentDescription="@string/label_movie_poster"/>
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/img_movie_poster"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:scaleType="centerCrop"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="@string/label_movie_poster"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:orientation="vertical"
+                        android:paddingStart="30dp"
+                        android:paddingEnd="5dp">
+
+                        <!-- Release date -->
+                        <TextView
+                            android:id="@+id/tv_movie_release_date"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="25sp"
+                            android:textColor="@color/colorPrimary"
+                            android:layout_marginBottom="15dp"/>
+
+                        <!-- RunTime -->
+                        <TextView
+                            android:id="@+id/tv_movie_run_time"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"
+                            android:textColor="@color/colorPrimary"
+                            android:layout_marginBottom="15dp"/>
+
+                        <!-- User Rating -->
+                        <TextView
+                            android:id="@+id/tv_movie_user_rating"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="15sp"
+                            android:layout_marginBottom="15dp"/>
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+                <!-- Synopsis -->
+
+                <TextView
+                    android:id="@+id/tv_movie_synopsis"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:textSize="20sp"
+                    app:layout_constraintTop_toBottomOf="@+id/ll_movie_infos"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <View
+                    android:id="@+id/hl_movie"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.25"/>
+                    android:layout_height="1.5dp"
+                    android:layout_marginTop="5dp"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_movie_synopsis"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:background="@color/black" />
 
-            </LinearLayout>
+                <TextView
+                    android:id="@+id/tv_trailers_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/hl_movie"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/tv_trailers_title"
+                    android:textSize="20sp"
+                    android:textStyle="bold"/>
 
-            <!-- Synopsis -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:text="@string/label_synopsis"/>
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_trailers"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_trailers_title"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
 
-            <TextView
-                android:id="@+id/tv_movie_synopsis"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginBottom="15dp"/>
-
-
-            <!-- User Rating -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:text="@string/label_user_rating"/>
-
-            <TextView
-                android:id="@+id/tv_movie_user_rating"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginBottom="15dp"/>
-
-            <!-- Release date -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:text="@string/label_release_date"/>
-
-            <TextView
-                android:id="@+id/tv_movie_release_date"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginBottom="15dp"/>
+                </android.support.v7.widget.RecyclerView>
 
 
-        </LinearLayout>
+
+            </android.support.constraint.ConstraintLayout>
+
+        </android.support.constraint.ConstraintLayout>
 
     </ScrollView>
-
-
 </FrameLayout>
+
+<!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="vertical">-->
+
+            <!--&lt;!&ndash; Title &ndash;&gt;-->
+
+<!--<RelativeLayout-->
+<!--android:orientation="vertical"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:paddingBottom="@dimen/activity_vertical_margin"-->
+<!--android:paddingLeft="@dimen/activity_horizontal_margin"-->
+<!--android:paddingRight="@dimen/activity_horizontal_margin"-->
+<!--android:paddingTop="@dimen/activity_vertical_margin">-->
+
+
+
+<!--&lt;!&ndash; Synopsis &ndash;&gt;-->
+<!--<TextView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textSize="22sp"-->
+    <!--android:textStyle="bold"-->
+    <!--android:text="@string/label_synopsis"/>-->
+
+<!--<TextView-->
+    <!--android:id="@+id/tv_movie_synopsis"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textSize="20sp"-->
+    <!--android:layout_marginBottom="15dp"/>-->
+
+
+<!--&lt;!&ndash; User Rating &ndash;&gt;-->
+<!--<TextView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textSize="22sp"-->
+    <!--android:textStyle="bold"-->
+    <!--android:text="@string/label_user_rating"/>-->
+
+<!--<TextView-->
+    <!--android:id="@+id/tv_movie_user_rating"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textSize="20sp"-->
+    <!--android:layout_marginBottom="15dp"/>-->
+
+
+<!--</RelativeLayout>-->
+
+    <!--</LinearLayout> -->
